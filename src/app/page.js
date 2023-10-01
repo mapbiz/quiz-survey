@@ -1,113 +1,104 @@
-import Image from 'next/image'
+'use client'
+import styles from '@/components/Quiz/Styles.module.scss'
+import React, {useEffect, useState} from "react";
+import FormQuiz from "@/components/Quiz/FormQuiz";
+import axios from "axios";
+import Image from "next/image";
+import ButtonBgImage from "@/components/ButtonBgImage/ButtonBgImage";
 
-export default function Home() {
+export default function Page({isOpenQuiz, isClose}) {
+
+  const arrayBack = <svg xmlns="http://www.w3.org/2000/svg" width="41" height="20" viewBox="0 0 41 20" fill="none">
+    <path d="M22.2666 10.0649C27.1557 10.0999 32.0448 10.1279 36.934 10.1752C37.9085 10.1849 38.8843 10.2525 39.8549 10.3369C40.0155 10.3523 40.167 10.4103 40.2898 10.5031C40.4125 10.596 40.5007 10.7194 40.5428 10.8573C40.6225 11.0781 40.3454 11.3913 40.0145 11.4373C39.6935 11.4819 39.3742 11.5512 39.0516 11.5684C36.9916 11.6788 34.9317 11.835 32.8697 11.868C28.6334 11.9353 24.3958 11.9523 20.1586 11.9566C16.1386 11.9607 12.1183 11.9162 8.0983 11.908C7.45281 11.9066 6.80697 11.9785 6.16256 12.0295C6.1198 12.0388 6.08038 12.0575 6.04791 12.0838C6.01544 12.1101 5.99098 12.1432 5.97676 12.1801C5.96517 12.2681 5.99458 12.4166 6.06073 12.4482C7.29607 13.042 8.51627 13.6668 9.78656 14.1969C12.7417 15.4299 15.5139 16.9419 18.2842 18.459C18.7394 18.7083 19.2166 18.9616 19.4002 19.4563C19.4336 19.5463 19.4856 19.7005 19.4432 19.7306C19.2912 19.856 19.1065 19.9461 18.9056 19.9929C18.6916 20.0152 18.4748 19.9846 18.2794 19.9043C17.5872 19.627 16.8999 19.3377 16.2265 19.0267C11.413 16.8041 6.60102 14.579 1.79052 12.3515C-0.026474 11.5157 -0.88987 10.7053 1.29124 8.86761C1.91961 8.3379 2.55529 7.80899 3.23859 7.33795C6.40754 5.1512 9.58809 2.97782 12.7802 0.817774C13.2191 0.539204 13.6819 0.291378 14.1645 0.076582C14.4792 -0.0744934 14.7943 0.0150852 15.066 0.19628C15.365 0.395767 15.5507 0.975618 15.4476 1.23062C15.2185 1.79675 14.762 2.21213 14.2718 2.58824C12.3843 4.03622 10.4868 5.4738 8.57921 6.90097C7.33959 7.8336 6.08696 8.7525 4.84929 9.68702C4.78813 9.73307 4.78509 9.87625 4.80987 9.96235C4.82614 9.99962 4.85238 10.0328 4.88636 10.0591C4.92034 10.0855 4.96103 10.1041 5.00494 10.1134C5.65186 10.151 6.29985 10.1987 6.9473 10.1957C12.0539 10.1719 17.1605 10.1421 22.2671 10.1065L22.2666 10.0649Z" fill="white" fill-opacity="0.8"/>
+  </svg>
+
+
+  const [currentData, setCurrentData] = useState()
+  const [route, setRoute] = useState("/quiz")
+  const [previousRoutes, setPreviousRoutes] = useState([]);
+  const [isThanks, setIsThanks] = useState(false)
+
+  async function getData(route) {
+    const url = `https://xn----8sbb1agckqokro3icn.xn--p1ai/wp-json/mapbiz/v1${route}`;
+    try {
+      const response = await axios.get(url);
+      return response.data.fields; // Возвращаем данные из промиса
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getData(route);
+      setCurrentData(data); // Сохраняем полученные данные в состояние
+      // console.log(data)
+    };
+
+    fetchData(); // Вызываем асинхронную функцию внутри useEffect
+  }, [route]);
+
+
+  const handleGoBack = (link) => {
+    setRoute(link)
+  };
+
+  const handlePostData = (data) => {
+    setIsThanks(true)
+    console.log(data)
+  }
+
+  const [step, setStep] = useState(undefined)
+  const {title, subtitle, content, next, prev} = currentData || {};
+  const {checkroutes, radio, checkboxes, inputs, finish} = content || {}
+
+  const handleNext = (link) => {
+    setRoute(link)
+  }
+
+  const handleRoute = (route) => {
+    // При добавлении нового рута, сохраняем текущий route в стек предыдущих рутов
+    setPreviousRoutes((prevRoutes) => [...prevRoutes, route, '/quiz']);
+    setRoute(route)
+  }
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing!&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+
+      <div className={`m-auto w-screen h-screen flex items-center justify-center bg-[#1E1E1E] z-50`}>
+        <div className={`max-w-[1280px] w-full flex justify-between`}>
+          <div className={''}>
+            <div className={''}>
+              <svg className={'w-full h-full'} width="395" height="364" viewBox="0 0 395 364" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0.605113 0.363626H95.4205L195.562 244.682H199.824L299.966 0.363626H394.781V364H320.207V127.317H317.189L223.084 362.224H172.303L78.1974 126.429H75.179V364H0.605113V0.363626Z" fill="#470000" fill-opacity="0.53"/>
+              </svg>
+            </div>
+            <div className={''}>
+
+            </div>
+          </div>
+          {/*<Image src={'/img/quiz/burger.png'} width={357} height={360} alt={'rfhnbyrf'}></Image>*/}
+          <div className={'w-[745px] h-[550px] bg-center '}>
+            <div className={`${styles.titleBlock} flex justify-center items-center `}>
+              <p className={`text-[20px]`}>{finish === false ? title : 'Ну и терпение) Отличная работа'}</p>
+            </div>
+            <p className={'text-white text-[23px] font-medium mt-[20px] mb-[40px]'}>{subtitle}</p>
+            <FormQuiz isPost={handlePostData} checkroutes={checkroutes} radio={radio} title={title}
+                      checkboxes={checkboxes} inputs={inputs} finish={finish} thanks={isThanks}
+                      onRoute={handleRoute}/>
+            <div className={'flex justify-between items-center'}>
+              {!isThanks && route !== '/quiz' && <button onClick={() => {
+                handleGoBack(prev)
+              }}>{arrayBack}</button>}
+
+              {route !== '/quiz' &&
+                  finish === false &&
+                  <ButtonBgImage isValid={true} type={'button'} text={'далее'}  click={() => {
+                    handleNext(next)}
+                  }/>
+              }
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
   )
 }
